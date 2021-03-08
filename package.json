@@ -59,7 +59,7 @@
     "@angular/compiler": "^12.0.0-next.0",
     "@angular/compiler-cli": "^12.0.0-next.0",
     "tslib": "^2.0.0",
-    "typescript": ">=4.0 <4.2"
+    "typescript": "<4.3"
   },
   "devDependencies": {
     "@angular/cdk": "^11.0.0",
@@ -102,7 +102,7 @@
     "standard-version": "^9.0.0",
     "ts-node": "^9.0.0",
     "tslib": "^2.0.0",
-    "typescript": "~4.1.2",
+    "typescript": "~4.2.0",
     "zone.js": "^0.11.0"
   },
   "private": true,
