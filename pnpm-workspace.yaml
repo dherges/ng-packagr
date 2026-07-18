@@ -1,6 +1,7 @@
 packages:
   - .
   - integration/consumers/ng-cli
+  - 'packages/*'
 
 allowBuilds:
   '@firebase/util': false

@@ -1,0 +1,17 @@
+{
+  "name": "@ng-packagr/library-builder",
+  "version": "0.1.0-alpha.0",
+  "description": "Next-gen Angular library bundler driven by esbuild and vite",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "esbuild": "^0.25.0",
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "@angular/compiler-cli": "^18.0.0 || ^19.0.0 || ^20.0.0"
+  }
+}
