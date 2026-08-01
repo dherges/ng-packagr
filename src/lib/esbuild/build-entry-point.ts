@@ -7,17 +7,21 @@ import { angularLibraryEsbuildPlugin } from './angular-library-plugin';
 export async function buildEntryPoint(
   entryPointFilePath: string,
   outputFile: string,
+  declarationsDir: string,
+  declarationsBundled: string,
   parsedConfiguration: ParsedConfiguration
 ) {
   console.log('🚀 Stage 1: Generating APF Type Definitions (.d.ts)...');
   const { NgtscProgram } = await import('@angular/compiler-cli');
-  const distRoot = path.dirname(path.dirname(outputFile));
+  const flatModuleFile = path.basename(declarationsBundled, '.d.ts');
   const angularDtsOptions = {
     ...parsedConfiguration.options,
     declaration: true,
     emitDeclarationOnly: true, // NUR Typen schreiben!
-    declarationDir: distRoot,
-    outDir: distRoot,
+    declarationDir: declarationsDir,
+    outDir: declarationsDir,
+    flatModuleOutFile: `${flatModuleFile}.js`, // Angular verlangt intern oft die .js-Endung für das Namensmapping
+    flatModuleId: parsedConfiguration.options.flatModuleId,
   };
   const dtsCompilerHost = ts.createCompilerHost({ options: angularDtsOptions as any });
   const angularDtsProgram = new NgtscProgram(
