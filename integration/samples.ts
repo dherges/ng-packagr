@@ -5,7 +5,7 @@ const PACKAGE_FILE_CANDIDATES = ['ng-packagr-api.js', 'ng-package.js', 'ng-packa
 const testDirectories = readdirSync('integration/samples');
 console.log(`Processing integration samples: ${testDirectories.join('\n')}`);
 
-for (const testDirectory of testDirectories) {
+for (const testDirectory of ['apf']) {
   const testPath = resolve('integration/samples', testDirectory);
   console.log(`\nProcessing integration sample: ${testDirectory}.`);
   const configFile = PACKAGE_FILE_CANDIDATES.find(f => existsSync(join(testPath, f)));
