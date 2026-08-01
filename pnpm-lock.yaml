@@ -28,6 +28,9 @@ importers:
       dependency-graph:
         specifier: ^1.0.0
         version: 1.0.0
+      dts-bundle-generator:
+        specifier: ^9.5.1
+        version: 9.5.1
       esbuild:
         specifier: ^0.28.0
         version: 0.28.0
@@ -3546,6 +3549,11 @@ packages:
   dotgitignore@2.1.0:
     resolution: {integrity: sha512-sCm11ak2oY6DglEPpCB8TixLjWAxd3kJTs6UIcSasNYxXdFPV+YKlye92c8H4kKFqV5qYMIh7d+cYecEg0dIkA==}
     engines: {node: '>=6'}
+
+  dts-bundle-generator@9.5.1:
+    resolution: {integrity: sha512-DxpJOb2FNnEyOzMkG11sxO2dmxPjthoVWxfKqWYJ/bI/rT1rvTMktF5EKjAYrRZu6Z6t3NhOUZ0sZ5ZXevOfbA==}
+    engines: {node: '>=14.0.0'}
+    hasBin: true
 
   dts-resolver@3.0.0:
     resolution: {integrity: sha512-1T1f+z+4tl9XD+m+0HBgWoL/nm0bOIffyWaUuUSBlFg/86IWvfx+wjNaO/ybU0AJzG9/Mi5hBUgGV6zCmWEN7Q==}
@@ -9208,6 +9216,11 @@ snapshots:
     dependencies:
       find-up: 3.0.0
       minimatch: 3.1.5
+
+  dts-bundle-generator@9.5.1:
+    dependencies:
+      typescript: 6.0.3
+      yargs: 17.7.2
 
   dts-resolver@3.0.0: {}
 

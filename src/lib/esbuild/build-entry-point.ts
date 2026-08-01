@@ -1,8 +1,9 @@
 import { ParsedConfiguration } from '@angular/compiler-cli';
 import * as esbuild from 'esbuild';
 import * as path from 'path';
-import * as ts from 'typescript';
 import { angularLibraryEsbuildPlugin } from './angular-library-plugin';
+import { createRawTypeDefinitions } from './create-type-definitions';
+import { bundleTypeDefinitions } from './bundle-type-definitions';
 
 export async function buildEntryPoint(
   entryPointFilePath: string,
@@ -12,26 +13,20 @@ export async function buildEntryPoint(
   parsedConfiguration: ParsedConfiguration
 ) {
   console.log('🚀 Stage 1: Generating APF Type Definitions (.d.ts)...');
-  const { NgtscProgram } = await import('@angular/compiler-cli');
   const flatModuleFile = path.basename(declarationsBundled, '.d.ts');
-  const angularDtsOptions = {
-    ...parsedConfiguration.options,
-    declaration: true,
-    emitDeclarationOnly: true, // NUR Typen schreiben!
-    declarationDir: declarationsDir,
-    outDir: declarationsDir,
-    flatModuleOutFile: `${flatModuleFile}.js`, // Angular verlangt intern oft die .js-Endung für das Namensmapping
-    flatModuleId: parsedConfiguration.options.flatModuleId,
-  };
-  const dtsCompilerHost = ts.createCompilerHost({ options: angularDtsOptions as any });
-  const angularDtsProgram = new NgtscProgram(
-    parsedConfiguration.rootNames,
-    angularDtsOptions as any,
-    dtsCompilerHost
-  );
-  await angularDtsProgram.compiler.analyzeAsync();
-  angularDtsProgram.compiler.prepareEmit();
-  angularDtsProgram.getTsProgram().emit(undefined, undefined, undefined, true);
+  const distRoot = path.dirname(path.dirname(outputFile));
+  const tmpTypesDir = path.join(distRoot, 'tmp-typings', path.basename(declarationsDir));
+  await createRawTypeDefinitions({
+    parsedConfiguration,
+    tmpTypesDir,
+    flatModuleFile
+  });
+  await bundleTypeDefinitions({
+    tmpTypesDir,
+    flatModuleFile,
+    declarationsDir,
+    declarationsBundled
+  });
 
   console.log('🚀 Stage 2: Building JavaScript Bundle (esbuild)...');
   await esbuild.build({

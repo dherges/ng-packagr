@@ -39,6 +39,7 @@
     "chokidar": "^5.0.0",
     "commander": "^15.0.0",
     "dependency-graph": "^1.0.0",
+    "dts-bundle-generator": "^9.5.1",
     "esbuild": "^0.28.0",
     "find-cache-directory": "^6.0.0",
     "injection-js": "^2.4.0",
