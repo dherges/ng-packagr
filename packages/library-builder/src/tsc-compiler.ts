@@ -17,6 +17,8 @@ export async function generateTypeDefinitions(opts: TypeGeneratorOptions): Promi
     moduleResolution: ts.ModuleResolutionKind.NodeNext,
     declaration: true,            
     emitDeclarationOnly: true, // Generate .d.ts only
+    flatModuleOutFile: 'library.d.ts', // TODO...
+    flatModuleId: 'my-library-module-id', // TODO...
     outDir: opts.outDir,
     skipLibCheck: true,
   };
