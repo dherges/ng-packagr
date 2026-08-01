@@ -1,8 +1,9 @@
-import { pipe, tap } from 'rxjs';
+import { pipe, switchMap, tap } from 'rxjs';
 import { STATE_DONE } from '../../graph/node';
 import { Transform } from '../../graph/transform';
 import * as log from '../../utils/log';
 import { findEntryPointInProgress } from '../nodes';
+import { buildEntryPoint } from '../../esbuild/build-entry-point';
 
 /**
  * A re-write of the `transformSources()` script that transforms an entry point from sources to distributable format.
@@ -12,12 +13,7 @@ import { findEntryPointInProgress } from '../nodes';
  *
  * The current transformation pipeline can be thought of as:
  *
- *  - clean
- *  - compileTs
- *  - downlevelTs
- *  - writeBundles
- *    - bundleToFesm15
- *  - relocateSourceMaps
+ *  - buildEntryPoint (native esbuild)
  *  - writePackage
  *   - copyStagedFiles (bundles, esm, dts, sourcemaps)
  *   - writePackageJson
@@ -25,13 +21,9 @@ import { findEntryPointInProgress } from '../nodes';
  * The transformation pipeline is pluggable through the dependency injection system.
  * Sub-transformations are passed to this factory function as arguments.
  *
- * @param compileTs Transformation compiling typescript sources to ES2022 modules.
- * @param writeBundles Transformation flattening ES2022 modules to ESM2022, UMD, and minified UMD.
  * @param writePackage Transformation writing a distribution-ready `package.json` (for publishing to npm registry).
  */
 export const entryPointTransformFactory = (
-  compileTs: Transform,
-  writeBundles: Transform,
   writePackage: Transform,
 ): Transform =>
   pipe(
@@ -42,10 +34,30 @@ export const entryPointTransformFactory = (
       log.msg(`Building entry point '${entryPoint.data.entryPoint.moduleId}'`);
       log.msg('------------------------------------------------------------------------------');
     }),
+
+    switchMap(async graph => {
+      const entryPoint = findEntryPointInProgress(graph);
+      const entryPointFilePath = entryPoint.data.entryPoint.entryFilePath;
+      const outputFile = entryPoint.data.destinationFiles.fesm2022;
+      const declarationsDir = entryPoint.data.destinationFiles.declarationsDir;
+      const declarationsBundled = entryPoint.data.destinationFiles.declarationsBundled;
+      const parsedConfiguration = entryPoint.data.tsConfig;
+      await buildEntryPoint(
+        entryPointFilePath,
+        outputFile,
+        declarationsDir,
+        declarationsBundled,
+        parsedConfiguration
+      );
+
+      return graph;
+    }),
+
     // TypeScript sources compilation
-    compileTs,
+    // compileTs,
     // After TypeScript: bundling and write package
-    writeBundles,
+    // writeBundles,
+
     writePackage,
     tap(graph => {
       const entryPoint = findEntryPointInProgress(graph);
