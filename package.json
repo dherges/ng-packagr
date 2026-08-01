@@ -113,6 +113,7 @@
     "lint": "eslint --cache --max-warnings=0 \"**/*.ts\"",
     "integration:samples": "tsx integration/samples.ts",
     "integration:samples:dev": "tsx --tsconfig src/tsconfig.packagr.json ./integration/samples.dev.ts",
+    "integration:samples:build": "tsx run-library-builder.ts",
     "integration:specs": "tsx ./node_modules/jasmine/bin/jasmine.js --config=integration/tsconfig.specs.json \"integration/samples/*/specs/**/*.ts\"",
     "integration:consumers": "integration/consumers.sh",
     "integration:consumers:ngc": "ngc -p integration/consumers/tsc/tsconfig.json",

@@ -9,26 +9,28 @@ export interface LibraryBuilderOptions {
 }
 
 export async function buildLibrary(options: LibraryBuilderOptions): Promise<void> {
-  // 1. Generiere Typdefinitionen (.d.ts) über die Angular-API
+  console.log('🚀 Building library...');
+
+  // Generate type definitions (.d.ts) by the Angular Compiler API
   await generateTypeDefinitions({
     entryPoints: [options.entryPoint],
     outDir: options.dest
   });
 
-  // 2. Nutze Esbuild für das blitzschnelle JS-Flattening & Bundling
-  console.log('🚀 Starte Esbuild für das JavaScript-Bundling (FESM)...');
+  // Flatten and bundle JavaScript files (`.mjs`) by esbuild
   await esbuild.build({
     entryPoints: [options.entryPoint],
     bundle: true,
     format: 'esm',
-    outfile: `${options.dest}/fesm2022/library.mjs`,
+    outfile: `${options.dest}/fesm2022/library.mjs`, // TODO: adjust output path...
     conditions: ['es2022'],
-    legalComments: 'none', // Löst dein ursprüngliches GitHub-Issue vollautomatisch!
+    legalComments: 'none',
+    packages: 'external',
     plugins: [
-      angularTemplateInlinePlugin() // Verarbeitet Styles & Templates im Speicher
+      angularTemplateInlinePlugin()
     ],
     sourcemap: options.sourcemap ?? true,
   });
 
-  console.log('🎉 Bibliothek erfolgreich gebaut!');
+  console.log('🎉 Library built success!');
 }
