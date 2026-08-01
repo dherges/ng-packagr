@@ -1,4 +1,4 @@
-import { NgtscProgram, type AngularCompilerOptions } from '@angular/compiler-cli';
+import { NgtscProgram, type AngularCompilerOptions, createCompilerHost } from '@angular/compiler-cli';
 import * as ts from 'typescript';
 
 export interface TypeGeneratorOptions {
@@ -8,26 +8,30 @@ export interface TypeGeneratorOptions {
 }
 
 export async function generateTypeDefinitions(opts: TypeGeneratorOptions): Promise<void> {
-  // Standard-Compileroptions für APF definieren
+  console.log('🚀 Running Angular Compiler for type definitions (.d.ts)...');
+
+  // Compiler options for APF
   const baseOptions: AngularCompilerOptions = {
     target: ts.ScriptTarget.ES2022,
-    module: ts.ModuleKind.ES2022,
+    module: ts.ModuleKind.NodeNext,
     moduleResolution: ts.ModuleResolutionKind.NodeNext,
     declaration: true,            
-    emitDeclarationOnly: true,    // Nur .d.ts erzeugen
+    emitDeclarationOnly: true, // Generate .d.ts only
     outDir: opts.outDir,
     skipLibCheck: true,
   };
 
-  console.log('🚀 Starte Angular Compiler für Typdefinitionen (.d.ts)...');
+  // Create Typescript host and Angular host - the latter wraps the first one
+  const tsHost = ts.createCompilerHost(baseOptions);
+  const ngHost = createCompilerHost({ options: baseOptions, tsHost });
 
-  // NgtscProgram instanziieren statt createProgram
-  const program = new NgtscProgram(opts.entryPoints, baseOptions);
+  // NgtscProgram
+  const program = new NgtscProgram(opts.entryPoints, baseOptions, ngHost);
 
-  // Führe den Compiler-Emit aus
+  // Run the Angular compiler
   const emitResult = program.emit();
 
-  // Fehler/Diagnostics auswerten
+  // Extract errors and diagnostics
   const diagnostics = ts.getPreEmitDiagnostics(program.getTsProgram()).concat(emitResult.diagnostics);
   
   if (diagnostics.length > 0) {
@@ -40,5 +44,5 @@ export async function generateTypeDefinitions(opts: TypeGeneratorOptions): Promi
     throw new Error(`TypeScript/Angular Compiler Fehler:\n${message}`);
   }
 
-  console.log(`✅ Typdefinitionen erfolgreich nach "${opts.outDir}" geschrieben.`);
+  console.log(`✅ Type definitions written to "${opts.outDir}".`);
 }
