@@ -64,9 +64,10 @@ In summary, the `esbuild`-native rewrite aims to be benefitial to Angular librar
 to organizations running CI/CD pipelines for large-scale Angular component libraries,
 and to the Angular Core & CLI maintainers.
 
-It's a _"win-win-win"_ proposition.
-Tom Gayner of Markel would call it so.
-So do I.
+It's a _"win-win-win"_ proposition:
+the developers win.
+The Angular team wins.
+And the `ng-packagr` maintainers win.
 
 
 ## Next Steps
