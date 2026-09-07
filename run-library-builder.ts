@@ -23,4 +23,6 @@ async function run() {
   }
 }
 
-run();
+run()
+  .then(() => console.log("Finished!"))
+  .catch(err => console.log("Error: ", err));

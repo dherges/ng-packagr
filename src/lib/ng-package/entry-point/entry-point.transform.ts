@@ -1,9 +1,9 @@
 import { pipe, switchMap, tap } from 'rxjs';
+import { buildEntryPoint } from '../../esbuild/build-entry-point';
 import { STATE_DONE } from '../../graph/node';
 import { Transform } from '../../graph/transform';
 import * as log from '../../utils/log';
 import { findEntryPointInProgress } from '../nodes';
-import { buildEntryPoint } from '../../esbuild/build-entry-point';
 
 /**
  * A re-write of the `transformSources()` script that transforms an entry point from sources to distributable format.
@@ -24,6 +24,8 @@ import { buildEntryPoint } from '../../esbuild/build-entry-point';
  * @param writePackage Transformation writing a distribution-ready `package.json` (for publishing to npm registry).
  */
 export const entryPointTransformFactory = (
+  // compileTs: Transform,
+  // writeBundles: Transform,
   writePackage: Transform,
 ): Transform =>
   pipe(
@@ -35,6 +37,7 @@ export const entryPointTransformFactory = (
       log.msg('------------------------------------------------------------------------------');
     }),
 
+    // XX: 
     switchMap(async graph => {
       const entryPoint = findEntryPointInProgress(graph);
       const entryPointFilePath = entryPoint.data.entryPoint.entryFilePath;

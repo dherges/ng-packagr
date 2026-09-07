@@ -1,6 +1,6 @@
 import * as esbuild from 'esbuild';
-import { generateTypeDefinitions } from './tsc-compiler.js';
 import { angularTemplateInlinePlugin } from './angular-template-inline-plugin.js';
+import { generateTypeDefinitions } from './tsc-compiler.js';
 
 export interface LibraryBuilderOptions {
   entryPoint: string;

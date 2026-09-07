@@ -2,8 +2,8 @@ import { ParsedConfiguration } from '@angular/compiler-cli';
 import * as esbuild from 'esbuild';
 import * as path from 'path';
 import { angularLibraryEsbuildPlugin } from './angular-library-plugin';
-import { createRawTypeDefinitions } from './create-type-definitions';
 import { bundleTypeDefinitions } from './bundle-type-definitions';
+import { createRawTypeDefinitions } from './create-type-definitions';
 
 export async function buildEntryPoint(
   entryPointFilePath: string,
@@ -38,7 +38,7 @@ export async function buildEntryPoint(
     sourcemap: true,
     // conditions: ['es2022'],
     // legalComments: 'none',
-    packages: 'external', 
+    packages: 'external',
     treeShaking: true,
     minifyIdentifiers: false,
     minifySyntax: true,

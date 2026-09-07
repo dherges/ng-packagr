@@ -1,4 +1,4 @@
-import { NgtscProgram, type AngularCompilerOptions, createCompilerHost } from '@angular/compiler-cli';
+import { type AngularCompilerOptions, NgtscProgram, createCompilerHost } from '@angular/compiler-cli';
 import * as ts from 'typescript';
 
 export interface TypeGeneratorOptions {
@@ -15,7 +15,7 @@ export async function generateTypeDefinitions(opts: TypeGeneratorOptions): Promi
     target: ts.ScriptTarget.ES2022,
     module: ts.ModuleKind.NodeNext,
     moduleResolution: ts.ModuleResolutionKind.NodeNext,
-    declaration: true,            
+    declaration: true,
     emitDeclarationOnly: true, // Generate .d.ts only
     flatModuleOutFile: 'library.d.ts', // TODO...
     flatModuleId: 'my-library-module-id', // TODO...
@@ -35,7 +35,7 @@ export async function generateTypeDefinitions(opts: TypeGeneratorOptions): Promi
 
   // Extract errors and diagnostics
   const diagnostics = ts.getPreEmitDiagnostics(program.getTsProgram()).concat(emitResult.diagnostics);
-  
+
   if (diagnostics.length > 0) {
     const formatHost: ts.FormatDiagnosticsHost = {
       getCanonicalFileName: (path) => path,

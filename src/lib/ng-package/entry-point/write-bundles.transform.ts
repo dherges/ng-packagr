@@ -8,7 +8,7 @@ import { generateKey, readCacheEntry, saveCacheEntry } from '../../utils/cache';
 import { exists, mkdir, writeFile } from '../../utils/fs';
 import { ensureUnixPath } from '../../utils/path';
 import { findEntryPointInProgress } from '../nodes';
-import { NgPackagrOptions } from '../options.di';
+import { NgPackagrOptions } from '../options';
 
 type CachedBundleFile =
   | {

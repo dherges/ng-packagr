@@ -1,14 +1,14 @@
 import type { ParsedConfiguration } from '@angular/compiler-cli';
 import { InjectionToken, Provider } from 'injection-js';
-import { Observable, map, of as observableOf, firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom, map, of as observableOf } from 'rxjs';
 import { BuildGraph } from './graph/build-graph';
 import { Transform } from './graph/transform';
-import { NgPackagrOptions, normalizeOptions } from './ng-package/options';
-import { packageTransformFactory } from './ng-package/package.transform';
 import { analyseSourcesTransform } from './ng-package/entry-point/analyse-sources.transform';
 import { entryPointTransformFactory } from './ng-package/entry-point/entry-point.transform';
 import { initTsConfigTransformFactory } from './ng-package/entry-point/init-tsconfig.transform';
 import { writePackageTransform } from './ng-package/entry-point/write-package.transform';
+import { NgPackagrOptions, normalizeOptions } from './ng-package/options';
+import { packageTransformFactory } from './ng-package/package.transform';
 
 /**
  * The original ng-packagr implemented on top of a rxjs-ified and di-jectable transformation pipeline.

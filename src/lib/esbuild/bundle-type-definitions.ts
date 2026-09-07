@@ -1,6 +1,6 @@
+import { generateDtsBundle as runDtsGenerator } from 'dts-bundle-generator';
 import * as fs from 'fs';
 import * as path from 'path';
-import { generateDtsBundle as runDtsGenerator } from 'dts-bundle-generator';
 import * as log from '../utils/log';
 
 export interface BundleTypeDefOptions {
@@ -39,7 +39,7 @@ export async function bundleTypeDefinitions(options: BundleTypeDefOptions): Prom
     log.msg(`✅ Flat-Types successfully generated: ${path.basename(declarationsBundled)}`);
 
   } catch (error: any) {
-    throw new Error(`[dts-bundle-error] Failed to bundle d.ts files: ${error.message}`);
+    throw new Error(`[dts-bundle-error] Failed to bundle d.ts files: ${error.message}`, { cause: error });
   } finally {
     // 3. Autonome Bereinigung des temporären Ordners
     await fs.promises.rm(tmpTypesDir, { recursive: true, force: true });

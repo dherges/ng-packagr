@@ -1,9 +1,9 @@
+import { NgtscProgram, ParsedConfiguration, createCompilerHost } from '@angular/compiler-cli';
+import { createHash } from 'crypto';
 import * as esbuild from 'esbuild';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as ts from 'typescript';
-import { createCompilerHost, ParsedConfiguration, NgtscProgram } from '@angular/compiler-cli';
-import { createHash } from 'crypto';
 
 export interface AngularCompilerOptions {
   parsedConfiguration: ParsedConfiguration;
@@ -69,10 +69,10 @@ export const angularLibraryEsbuildPlugin = (options: AngularCompilerOptions): es
 
       const angularCompiler = angularProgram.compiler;
       const typeScriptProgram = angularProgram.getTsProgram();
-      augmentProgramWithVersioning(typeScriptProgram); 
+      augmentProgramWithVersioning(typeScriptProgram);
 
       // Builder-Programm für das inkrementelle Typechecking im RAM hochziehen
-      let builder = ts.createEmitAndSemanticDiagnosticsBuilderProgram(typeScriptProgram, tsCompilerHost);
+      const builder = ts.createEmitAndSemanticDiagnosticsBuilderProgram(typeScriptProgram, tsCompilerHost);
 
       // Instanzen für den nächsten inkrementellen Durchlauf sichern
       compilerCache.oldNgtscProgram = angularProgram;
@@ -84,7 +84,7 @@ export const angularLibraryEsbuildPlugin = (options: AngularCompilerOptions): es
       build.onStart(async () => {
         // Analysiert asynchrone Templates/Stylesheets im Vorfeld
         await angularCompiler.analyzeAsync();
-        
+
         const transformers = angularCompiler.prepareEmit().transformers;
 
         for (const sourceFile of builder.getSourceFiles()) {
@@ -96,7 +96,7 @@ export const angularLibraryEsbuildPlugin = (options: AngularCompilerOptions): es
             continue;
           }
 
-          // WICHTIG: Das Setzen des 4. Parameters auf 'false' (emitOnlyDtsFiles) 
+          // WICHTIG: Das Setzen des 4. Parameters auf 'false' (emitOnlyDtsFiles)
           // veranlasst den TS-Builder, die .d.ts-Pfade anzusteuern UND den JS-Zweig zu befeuern!
           builder.emit(sourceFile, undefined, undefined, false, transformers);
           angularCompiler.incrementalCompilation.recordSuccessfulEmit(sourceFile);
@@ -127,6 +127,7 @@ export const angularLibraryEsbuildPlugin = (options: AngularCompilerOptions): es
         }
 
         const rawContent = await fs.promises.readFile(sourcePath, 'utf8');
+
         return { contents: rawContent, loader: 'ts' };
       });
     },
