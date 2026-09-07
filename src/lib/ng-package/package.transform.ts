@@ -38,7 +38,7 @@ import {
   isEntryPointPending,
   ngUrl,
 } from './nodes';
-import { NgPackagrOptions } from './options.di';
+import { NgPackagrOptions } from './options';
 
 /**
  * A transformation for building an npm package:
@@ -112,8 +112,8 @@ export const packageTransformFactory =
       buildTransform,
       finalize(() => {
         for (const node of ngPkg.dependents) {
-          if (node instanceof EntryPointNode) {
-            node.cache.stylesheetProcessor?.destroy();
+          if (node instanceof EntryPointNode && node.cache && node.cache.stylesheetProcessor) {
+            node.cache.stylesheetProcessor.destroy();
           }
         }
       }),

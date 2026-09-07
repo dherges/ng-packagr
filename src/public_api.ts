@@ -8,5 +8,5 @@ export * from './lib/commands/version.command';
 /**
  * ngPackagr() programmatic API
  */
-export * from './lib/packagr';
-export { NgPackagrOptions } from './lib/ng-package/options.di';
+export * from './lib/packagr-v2';
+export { NgPackagrOptions } from './lib/ng-package/options';
