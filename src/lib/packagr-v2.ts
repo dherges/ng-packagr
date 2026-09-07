@@ -149,6 +149,8 @@ export class NgPackagr {
    * @return An observable result of the transformation pipeline.
    */
   public buildAsObservable(): Observable<void> {
+    console.log("=== Running packagr-v2 ===")
+
     if (!this.buildTransformOperator) {
       // Use the out-of-the-box transformation
       this.buildTransformOperator = packageTransformFactory(

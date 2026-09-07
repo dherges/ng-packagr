@@ -1,4 +1,4 @@
-import { ngPackagr } from '../packagr';
+import { ngPackagr } from '../packagr-v2';
 import { Command } from './command';
 
 /**

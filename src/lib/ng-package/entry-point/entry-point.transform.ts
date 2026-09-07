@@ -43,6 +43,7 @@ export const entryPointTransformFactory = (
     switchMap(async graph => {
       // running in legacy ng-packagr, skip the native esbuild...
       if (compileTs || writeBundles) {
+        log.msg('Skipping native esbuild...');
         return graph;
       }
 
