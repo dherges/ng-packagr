@@ -20,7 +20,7 @@ for (const testDirectory of testDirectories /*['apf']*/) {
   if (configFile === 'ng-packagr-api.js') {
     args.push(`${testPath}/${configFile}`);
   } else {
-    args.push('dist/src/cli/main.js', '-p', `${testPath}/${configFile}`);
+    args.push('dist/src/cli/main.js', '-p', `${testPath}/${configFile}`, '--native');
   }
 
   const { status, error } = spawnSync(process.execPath, args, {

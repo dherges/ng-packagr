@@ -43,11 +43,12 @@ export const entryPointTransformFactory = (
     switchMap(async graph => {
       // running in legacy ng-packagr, skip the native esbuild...
       if (compileTs || writeBundles) {
-        log.msg('Skipping native esbuild...');
+        log.debug('Building with the legacy pipeline.');
         return graph;
       }
 
       // ng-packagr new: invoke the native esbuild...
+      log.info('Building with esbuild natively...')
       const entryPoint = findEntryPointInProgress(graph);
       const entryPointFilePath = entryPoint.data.entryPoint.entryFilePath;
       const outputFile = entryPoint.data.destinationFiles.fesm2022;
@@ -65,12 +66,12 @@ export const entryPointTransformFactory = (
       return graph;
     }),
 
-    // --> legacy ng-packagr 
+    // BEGIN: support legacy ng-packagr for backwards-compatibility
     // TypeScript sources compilation
     optionalTransform(compileTs),
     // After TypeScript: bundling and write package
     optionalTransform(writeBundles),
-    // <-- end legacy ng-packagr
+    // END: support legacy ng-packagr for backwards-compatibility
 
     writePackage,
     tap(graph => {

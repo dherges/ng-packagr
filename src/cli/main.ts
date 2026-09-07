@@ -14,6 +14,7 @@ function parseProjectPath(parsed: string): string {
 program
   .name('ng-packagr')
   .storeOptionsAsProperties(false)
+  .option('-n, --native', 'Toggles native build', false)
   .option('-v, --version', 'Prints version info')
   .option('-w, --watch', 'Watch for file changes')
   .option('--poll <interval>', 'Enable and define the file watching poll time period in milliseconds', x => +x)
@@ -33,10 +34,10 @@ program.on('option:version', () => {
 
 program.parse(process.argv);
 
-const { config, project, watch, version, poll } = program.opts();
+const { config, native, project, watch, version, poll } = program.opts();
 
 if (!version) {
-  execute(build, { config, project, watch: !!watch, poll }).catch(err => {
+  execute(build, { config, native, project, watch: !!watch, poll }).catch(err => {
     error(err.message);
     process.exit(1);
   });

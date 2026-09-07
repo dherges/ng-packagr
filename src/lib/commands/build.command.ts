@@ -1,4 +1,5 @@
-import { ngPackagr } from '../packagr-v2';
+import { NgPackagr, ngPackagr } from '../packagr';
+import { NgPackagrNative, ngPackagrNative } from '../packagr-native';
 import { Command } from './command';
 
 /**
@@ -15,6 +16,8 @@ export interface CliArguments {
   config?: string;
   /** Enable and define the file watching poll time period in milliseconds */
   poll?: number;
+  /** Toggles the native build */
+  native?: boolean;
 }
 
 /**
@@ -27,5 +30,7 @@ export const build: Command<CliArguments, void> = opts => {
     throw new Error('No options provided to the build command.');
   }
 
-  return ngPackagr().forProject(opts.project).withTsConfig(opts.config).build({ watch: opts.watch, poll: opts.poll });
+  const packagr: NgPackagr | NgPackagrNative = opts.native ? ngPackagrNative() : ngPackagr();
+  
+  return packagr.forProject(opts.project).withTsConfig(opts.config).build({ watch: opts.watch, poll: opts.poll });
 };

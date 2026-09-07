@@ -1,5 +1,4 @@
 import type { ParsedConfiguration } from '@angular/compiler-cli';
-import { InjectionToken, Provider } from 'injection-js';
 import { Observable, firstValueFrom, map, of as observableOf } from 'rxjs';
 import { BuildGraph } from './graph/build-graph';
 import { Transform } from './graph/transform';
@@ -12,25 +11,12 @@ import { writePackageTransform } from './ng-package/entry-point/write-package.tr
 import { NgPackagrOptions, normalizeOptions } from './ng-package/options';
 import { packageTransformFactory } from './ng-package/package.transform';
 import { StylesheetProcessor } from './styles/stylesheet-processor';
+import * as log from './utils/log';
 
 /**
- * The original ng-packagr implemented on top of a rxjs-ified and di-jectable transformation pipeline.
- *
- * See the `docs/transformations.md` for more prose description.
- *
- * @link https://github.com/ng-packagr/ng-packagr/pull/572
+ * The native esbuild implementation of ng-packagr
  */
-export class NgPackagr {
-
-  /*
-  export const PACKAGE_TRANSFORM_TOKEN = new InjectionToken<Transform>(`ng.v5.packageTransform`);
-  
-  export const PACKAGE_TRANSFORM: TransformProvider = provideTransform({
-    provide: PACKAGE_TRANSFORM_TOKEN,
-    useFactory: packageTransformFactory,
-    deps: [PROJECT_TOKEN, OPTIONS_TOKEN, INIT_TS_CONFIG_TOKEN, ANALYSE_SOURCES_TOKEN, ENTRY_POINT_TRANSFORM_TOKEN],
-  });
-  */
+export class NgPackagrNative {
 
   private buildTransformOperator: Transform | undefined;
 
@@ -42,60 +28,26 @@ export class NgPackagr {
 
   private nativeEsBuild = false;
 
-  // TODO: to be removed
-  // private buildTransform: InjectionToken<Transform> = PACKAGE_TRANSFORM.provide;
-
-  constructor(
-    /** @deprecated to be removed */
-    private providers: Provider[]
-  ) {
-    console.log('TO BE REMOVED - providers: Provider[] constructor arg', this.providers);
-  }
-
   /**
    * Sets the path to the user's "ng-package" file (either `package.json`, `ng-package.json`, or `ng-package.js`)
    *
    * @param project File path
    * @return Self instance for fluent API
    */
-  public forProject(project: string): NgPackagr {
+  public forProject(project: string): NgPackagrNative {
     this.context.project = project;
-    // this.providers.push(provideProject(project));
 
     return this;
   }
 
-  public withNativeEsBuild(toggle: boolean): NgPackagr {
+  /**
+   * Toggles the native esbuild
+   *
+   * @param toggle True, when building with esbuild natively
+   * @returns 
+   */
+  public withNativeEsBuild(toggle: boolean): NgPackagrNative {
     this.nativeEsBuild = toggle;
-
-    return this;
-  }
-
-  /**
-   * Adds options to ng-packagr
-   *
-   * @param options Ng Packagr Options
-   * @return Self instance for fluent API
-   * @deprecated use the options parameter in 'build' and 'watch' methods
-   */
-  public withOptions(options: NgPackagrOptions): NgPackagr {
-    this.context.options = options;
-    // this.providers.push(provideOptions(options));
-
-    return this;
-  }
-
-  /**
-   * Adds dependency injection providers.
-   *
-   * @param providers
-   * @return Self instance for fluent API
-   * @link https://github.com/mgechev/injection-js
-   */
-  public withProviders(providers: Provider[]): NgPackagr {
-    console.log('TO BE REMOVED --- withProviders(providers: Provider[])', providers)
-    // TODO: throw new Error('BREAKING CHANGE');
-    // this.providers = [...this.providers, ...providers];
 
     return this;
   }
@@ -106,9 +58,8 @@ export class NgPackagr {
    * @param defaultValues A tsconfig providing default values to the compilation.
    * @return Self instance for fluent API
    */
-  public withTsConfig(defaultValues: ParsedConfiguration | string): NgPackagr {
+  public withTsConfig(defaultValues: ParsedConfiguration | string): NgPackagrNative {
     this.context.tsConfig = defaultValues;
-    // this.providers.push(provideTsConfig(defaultValues));
 
     return this;
   }
@@ -119,12 +70,8 @@ export class NgPackagr {
    * @param transform
    * @return Self instance for fluent API
    */
-  public withBuildTransform(transform: InjectionToken<Transform> /* transform: Transform */): NgPackagr {
-    console.log('TO BE REMOVED --- withBuildTransform(transform: InjectionToken<Transform>)', transform)
-    // this.buildTransformOperator = transform;
-
-    // TODO: throw new Error('BREAKING CHANGE');
-    // this.buildTransform = transform;
+  public withBuildTransform(transform: Transform): NgPackagrNative {
+    this.buildTransformOperator = transform;
 
     return this;
   }
@@ -136,10 +83,8 @@ export class NgPackagr {
    */
   public build(options: NgPackagrOptions = {}): Promise<void> {
     this.context.options = normalizeOptions(options);
-    // this.providers.push(provideOptions(options));
 
     return firstValueFrom(this.buildAsObservable());
-    // return this.buildAsObservable().toPromise();
   }
 
   /**
@@ -149,7 +94,6 @@ export class NgPackagr {
    */
   public watch(options: NgPackagrOptions = {}): Observable<void> {
     this.context.options = normalizeOptions(options);
-    // this.providers.push(provideOptions({ ...options, watch: true }));
 
     return this.buildAsObservable();
   }
@@ -160,7 +104,7 @@ export class NgPackagr {
    * @return An observable result of the transformation pipeline.
    */
   public buildAsObservable(): Observable<void> {
-    console.log("=== Running packagr-v2 ===")
+    log.info("=== Running ng-packagr-native ===")
 
     if (!this.buildTransformOperator) {
       // Use the out-of-the-box transformation
@@ -189,21 +133,8 @@ export class NgPackagr {
       this.buildTransformOperator,
       map(() => undefined),
     );
-
-    /*
-    if (!this.providers.some(p => 'provide' in p && p.provide === DEFAULT_TS_CONFIG_TOKEN)) {
-      this.withTsConfig(undefined);
-    }
-
-    const injector = ReflectiveInjector.resolveAndCreate(this.providers);
-    const buildTransformOperator = injector.get(this.buildTransform);
-
-    return observableOf(new BuildGraph()).pipe(
-      buildTransformOperator,
-      map(() => undefined),
-    );*/
   }
 }
 
-export const ngPackagr = (): NgPackagr =>
-  new NgPackagr([]);
+export const ngPackagrNative = (): NgPackagrNative =>
+  new NgPackagrNative();
