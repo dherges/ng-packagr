@@ -1,5 +1,4 @@
-import { NgPackagr, ngPackagr } from '../packagr';
-import { NgPackagrNative, ngPackagrNative } from '../packagr-native';
+import { NgPackagr, ngPackagr, ngPackagrNative } from '../packagr';
 import { Command } from './command';
 
 /**
@@ -30,7 +29,7 @@ export const build: Command<CliArguments, void> = opts => {
     throw new Error('No options provided to the build command.');
   }
 
-  const packagr: NgPackagr | NgPackagrNative = opts.native ? ngPackagrNative() : ngPackagr();
-  
+  const packagr: NgPackagr = opts.native ? ngPackagrNative() : ngPackagr();
+
   return packagr.forProject(opts.project).withTsConfig(opts.config).build({ watch: opts.watch, poll: opts.poll });
 };

@@ -3,12 +3,21 @@ import { InjectionToken, Provider, ReflectiveInjector } from 'injection-js';
 import { Observable, map, of as observableOf } from 'rxjs';
 import { BuildGraph } from './graph/build-graph';
 import { Transform } from './graph/transform';
+import { analyseSourcesTransform } from './ng-package/entry-point/analyse-sources.transform';
+import { compileNgcTransformFactory } from './ng-package/entry-point/compile-ngc.transform';
 import { ENTRY_POINT_PROVIDERS } from './ng-package/entry-point/entry-point.di';
+import { entryPointTransformFactory } from './ng-package/entry-point/entry-point.transform';
 import { DEFAULT_TS_CONFIG_TOKEN, provideTsConfig } from './ng-package/entry-point/init-tsconfig.di';
-import { NgPackagrOptions } from './ng-package/options';
+import { initTsConfigTransformFactory } from './ng-package/entry-point/init-tsconfig.transform';
+import { writeBundlesTransform } from './ng-package/entry-point/write-bundles.transform';
+import { writePackageTransform } from './ng-package/entry-point/write-package.transform';
+import { NgPackagrOptions, normalizeOptions } from './ng-package/options';
 import { provideOptions } from './ng-package/options.di';
 import { PACKAGE_PROVIDERS, PACKAGE_TRANSFORM } from './ng-package/package.di';
+import { packageTransformFactory } from './ng-package/package.transform';
+import { StylesheetProcessor } from './styles/stylesheet-processor';
 import { provideProject } from './project.di';
+import * as log from './utils/log';
 
 /**
  * The original ng-packagr implemented on top of a rxjs-ified and di-jectable transformation pipeline.
@@ -18,9 +27,24 @@ import { provideProject } from './project.di';
  * @link https://github.com/ng-packagr/ng-packagr/pull/572
  */
 export class NgPackagr {
+  /** @deprecated Kept for backwards compatibility */
   private buildTransform: InjectionToken<Transform> = PACKAGE_TRANSFORM.provide;
 
-  constructor(private providers: Provider[]) {}
+  private context = {
+    options: {} as NgPackagrOptions,
+    project: undefined as string,
+    tsConfig: undefined as ParsedConfiguration | string
+  }
+
+  /** @deprecated Kept for backwards compatibility */
+  private providers: Provider[] = []
+
+  constructor(providers?: Provider[]) {
+    if (providers && providers.length > 0) {
+      log.warn(`DEPRECATED API: new NgPackagr(providers: Provider[]) should not be used anymore!`);
+      this.providers.push(providers);
+    }
+  }
 
   /**
    * Adds options to ng-packagr
@@ -30,7 +54,7 @@ export class NgPackagr {
    * @deprecated use the options parameter in 'build' and 'watch' methods
    */
   public withOptions(options: NgPackagrOptions): NgPackagr {
-    this.providers.push(provideOptions(options));
+    this.context.options = options;
 
     return this;
   }
@@ -42,7 +66,7 @@ export class NgPackagr {
    * @return Self instance for fluent API
    */
   public forProject(project: string): NgPackagr {
-    this.providers.push(provideProject(project));
+    this.context.project = project;
 
     return this;
   }
@@ -50,11 +74,13 @@ export class NgPackagr {
   /**
    * Adds dependency injection providers.
    *
+   * @deprecated Kept for backwards-compatibility
    * @param providers
    * @return Self instance for fluent API
    * @link https://github.com/mgechev/injection-js
    */
   public withProviders(providers: Provider[]): NgPackagr {
+    log.warn(`DEPRECATED: withProviders() should not be used anymore!`);
     this.providers = [...this.providers, ...providers];
 
     return this;
@@ -67,7 +93,7 @@ export class NgPackagr {
    * @return Self instance for fluent API
    */
   public withTsConfig(defaultValues: ParsedConfiguration | string): NgPackagr {
-    this.providers.push(provideTsConfig(defaultValues));
+    this.context.tsConfig = defaultValues;
 
     return this;
   }
@@ -75,10 +101,12 @@ export class NgPackagr {
   /**
    * Overwrites the 'build' transform.
    *
+   * @deprecated Kept for backwards-compatibility
    * @param transform
    * @return Self instance for fluent API
    */
   public withBuildTransform(transform: InjectionToken<Transform>): NgPackagr {
+    log.warn(`DEPRECATED: withBuildTransform() should not be used anymore!`);
     this.buildTransform = transform;
 
     return this;
@@ -90,7 +118,7 @@ export class NgPackagr {
    * @return A promisified result of the transformation pipeline.
    */
   public build(options: NgPackagrOptions = {}): Promise<void> {
-    this.providers.push(provideOptions(options));
+    this.context.options = options;
 
     return this.buildAsObservable().toPromise();
   }
@@ -101,7 +129,7 @@ export class NgPackagr {
    * @return An observable result of the transformation pipeline.
    */
   public watch(options: NgPackagrOptions = {}): Observable<void> {
-    this.providers.push(provideOptions({ ...options, watch: true }));
+    this.context.options = options;
 
     return this.buildAsObservable();
   }
@@ -112,17 +140,45 @@ export class NgPackagr {
    * @return An observable result of the transformation pipeline.
    */
   public buildAsObservable(): Observable<void> {
-    if (!this.providers.some(p => 'provide' in p && p.provide === DEFAULT_TS_CONFIG_TOKEN)) {
-      this.withTsConfig(undefined);
+    if (this.providers.length > 0) {
+      log.warn(`DEPRECATION: running ng-packagr with the legacy DI-based transform pipeline!`);
+      // Legacy DI-based transforms
+      if (!this.providers.some(p => 'provide' in p && p.provide === DEFAULT_TS_CONFIG_TOKEN)) {
+        this.withTsConfig(undefined);
+      }
+
+      this.providers.push(provideOptions(this.context.options));
+      this.providers.push(provideProject(this.context.project));
+      this.providers.push(provideTsConfig(this.context.tsConfig));
+
+      const injector = ReflectiveInjector.resolveAndCreate(this.providers);
+      const buildTransformOperator = injector.get(this.buildTransform);
+
+      return observableOf(new BuildGraph()).pipe(
+        buildTransformOperator,
+        map(() => undefined),
+      );
+    } else {
+      // TODO: ng-packagr native...no DI... debug ts-extensions test failure
+      log.debug(`Running ng-packagr with the new transform pipeline!`);
+      const normalizedOptions = normalizeOptions(this.context.options);
+
+      // Use the out-of-the-box transformation
+      return observableOf(new BuildGraph()).pipe(
+        packageTransformFactory(
+          this.context.project,
+          normalizedOptions,
+          initTsConfigTransformFactory(this.context.tsConfig),
+          analyseSourcesTransform,
+          entryPointTransformFactory(
+            compileNgcTransformFactory(StylesheetProcessor, normalizedOptions),
+            writeBundlesTransform(normalizedOptions),
+            writePackageTransform(normalizedOptions)
+          )
+        ),
+        map(() => undefined)
+      );
     }
-
-    const injector = ReflectiveInjector.resolveAndCreate(this.providers);
-    const buildTransformOperator = injector.get(this.buildTransform);
-
-    return observableOf(new BuildGraph()).pipe(
-      buildTransformOperator,
-      map(() => undefined),
-    );
   }
 }
 
@@ -132,3 +188,6 @@ export const ngPackagr = (): NgPackagr =>
     ...PACKAGE_PROVIDERS,
     ...ENTRY_POINT_PROVIDERS,
   ]);
+
+export const ngPackagrNative = (): NgPackagr =>
+  new NgPackagr([]);
