@@ -1,10 +1,10 @@
 import { Observable, pipe, switchMap, tap } from 'rxjs';
 import { buildEntryPoint } from '../../esbuild/build-entry-point';
+import { BuildGraph } from '../../graph/build-graph';
 import { STATE_DONE } from '../../graph/node';
 import { Transform } from '../../graph/transform';
 import * as log from '../../utils/log';
 import { findEntryPointInProgress } from '../nodes';
-import { BuildGraph } from '../../graph/build-graph';
 
 /**
  * A re-write of the `transformSources()` script that transforms an entry point from sources to distributable format.
@@ -44,6 +44,7 @@ export const entryPointTransformFactory = (
       // running in legacy ng-packagr, skip the native esbuild...
       if (compileTs || writeBundles) {
         log.debug('Building with the legacy pipeline.');
+
         return graph;
       }
 

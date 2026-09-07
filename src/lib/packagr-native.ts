@@ -14,7 +14,7 @@ import { StylesheetProcessor } from './styles/stylesheet-processor';
 import * as log from './utils/log';
 
 /**
- * The native esbuild implementation of ng-packagr
+ * The native esbuild implementation of ng-packagr: no dependency injection here, optionally on esbuild natively.
  */
 export class NgPackagrNative {
 
@@ -107,25 +107,24 @@ export class NgPackagrNative {
     log.info("=== Running ng-packagr-native ===")
 
     if (!this.buildTransformOperator) {
+      // Evaluates the toggle for the esbuild native flag
+      const entryPointTransformOperator = this.nativeEsBuild ?
+        // Option 1: pass null, null 1st and 2nd param for the native esbuild
+        entryPointTransformFactory(null, null, writePackageTransform(this.context.options)) :
+        // Option 2: instantiate the legacy transforms with no DI
+        entryPointTransformFactory(
+          compileNgcTransformFactory(StylesheetProcessor, this.context.options),
+          writeBundlesTransform(this.context.options),
+          writePackageTransform(this.context.options)
+        );
+
       // Use the out-of-the-box transformation
       this.buildTransformOperator = packageTransformFactory(
         this.context.project,
         this.context.options,
-        initTsConfigTransformFactory(
-          this.context.tsConfig
-        ),
+        initTsConfigTransformFactory(this.context.tsConfig),
         analyseSourcesTransform,
-        entryPointTransformFactory(
-          this.nativeEsBuild ? null : compileNgcTransformFactory(StylesheetProcessor, this.context.options),
-          this.nativeEsBuild ? null : writeBundlesTransform(this.context.options),
-          // Option 1: pass null, null 1st and 2nd param for the native esbuild
-          // null, // XX: instantiate the legacy transforms with no DI
-          // null, // XX: instantiate the legacy transforms with no DI
-          // Option 2: instantiate the legacy transforms with no DI
-          // compileNgcTransformFactory(StylesheetProcessor, this.context.options)
-          // writeBundlesTransform(this.context.options)
-          writePackageTransform(this.context.options)
-        )
+        entryPointTransformOperator
       );
     }
 
