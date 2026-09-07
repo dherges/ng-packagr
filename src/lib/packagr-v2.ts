@@ -159,6 +159,8 @@ export class NgPackagr {
         ),
         analyseSourcesTransform,
         entryPointTransformFactory(
+          null,
+          null,
           writePackageTransform(this.context.options)
         )
       );

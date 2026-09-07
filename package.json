@@ -109,6 +109,7 @@
   "scripts": {
     "prepare": "husky",
     "build": "rimraf dist && pnpm --silent schema && tsc -p src/tsconfig.packagr.json && node ./scripts/postbuild.js",
+    "build:it": "pnpm -s build && pnpm -s integration:samples",
     "schema": "json2ts --input src/ng-package.schema.json --output src/ng-package.schema.ts && json2ts --input src/ng-entrypoint.schema.json --output src/ng-entrypoint.schema.ts",
     "release": "standard-version --releaseCommitMessageFormat 'release: cut {{currentTag}}' --no-verify --tag-prefix=\"\"",
     "publish:ci": "pnpm --silent build",

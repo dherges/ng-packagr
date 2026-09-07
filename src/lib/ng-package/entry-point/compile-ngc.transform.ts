@@ -7,7 +7,7 @@ import { compileSourceFiles } from '../../ngc/compile-source-files';
 import { StylesheetProcessor as StylesheetProcessorClass } from '../../styles/stylesheet-processor';
 import { setDependenciesTsConfigPaths } from '../../ts/tsconfig';
 import { EntryPointNode, PackageNode, isEntryPoint, isPackage } from '../nodes';
-import { NgPackagrOptions } from '../options.di';
+import { NgPackagrOptions } from '../options';
 
 export const compileNgcTransformFactory = (
   StylesheetProcessor: typeof StylesheetProcessorClass,

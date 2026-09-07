@@ -1,9 +1,10 @@
-import { pipe, switchMap, tap } from 'rxjs';
+import { Observable, pipe, switchMap, tap } from 'rxjs';
 import { buildEntryPoint } from '../../esbuild/build-entry-point';
 import { STATE_DONE } from '../../graph/node';
 import { Transform } from '../../graph/transform';
 import * as log from '../../utils/log';
 import { findEntryPointInProgress } from '../nodes';
+import { BuildGraph } from '../../graph/build-graph';
 
 /**
  * A re-write of the `transformSources()` script that transforms an entry point from sources to distributable format.
@@ -21,11 +22,13 @@ import { findEntryPointInProgress } from '../nodes';
  * The transformation pipeline is pluggable through the dependency injection system.
  * Sub-transformations are passed to this factory function as arguments.
  *
+ * @param compileTs Optional, the legacy transform for compilaton
+ * @param writeBundles Optional, the legacy transform for bundling
  * @param writePackage Transformation writing a distribution-ready `package.json` (for publishing to npm registry).
  */
 export const entryPointTransformFactory = (
-  // compileTs: Transform,
-  // writeBundles: Transform,
+  compileTs: Transform | undefined,
+  writeBundles: Transform | undefined,
   writePackage: Transform,
 ): Transform =>
   pipe(
@@ -37,8 +40,13 @@ export const entryPointTransformFactory = (
       log.msg('------------------------------------------------------------------------------');
     }),
 
-    // XX: 
     switchMap(async graph => {
+      // running in legacy ng-packagr, skip the native esbuild...
+      if (compileTs || writeBundles) {
+        return graph;
+      }
+
+      // ng-packagr new: invoke the native esbuild...
       const entryPoint = findEntryPointInProgress(graph);
       const entryPointFilePath = entryPoint.data.entryPoint.entryFilePath;
       const outputFile = entryPoint.data.destinationFiles.fesm2022;
@@ -56,10 +64,12 @@ export const entryPointTransformFactory = (
       return graph;
     }),
 
+    // --> legacy ng-packagr 
     // TypeScript sources compilation
-    // compileTs,
+    optionalTransform(compileTs),
     // After TypeScript: bundling and write package
-    // writeBundles,
+    optionalTransform(writeBundles),
+    // <-- end legacy ng-packagr
 
     writePackage,
     tap(graph => {
@@ -67,3 +77,11 @@ export const entryPointTransformFactory = (
       entryPoint.state = STATE_DONE;
     }),
   );
+
+function optionalTransform(transform: Transform | undefined): Transform {
+  if (transform) {
+    return transform;
+  } else {
+    return (graph: Observable<BuildGraph>) => graph;
+  }
+}

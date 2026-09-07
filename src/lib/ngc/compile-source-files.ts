@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import ts from 'typescript';
 import { BuildGraph } from '../graph/build-graph';
 import { findEntryPointInProgress, findPackageNode } from '../ng-package/nodes';
-import { NgPackagrOptions } from '../ng-package/options.di';
+import { NgPackagrOptions } from '../ng-package/options';
 import { StylesheetProcessor } from '../styles/stylesheet-processor';
 import { augmentProgramWithVersioning, cacheCompilerHost } from '../ts/cache-compiler-host';
 import * as log from '../utils/log';
