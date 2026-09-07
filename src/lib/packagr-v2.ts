@@ -4,11 +4,14 @@ import { Observable, firstValueFrom, map, of as observableOf } from 'rxjs';
 import { BuildGraph } from './graph/build-graph';
 import { Transform } from './graph/transform';
 import { analyseSourcesTransform } from './ng-package/entry-point/analyse-sources.transform';
+import { compileNgcTransformFactory } from './ng-package/entry-point/compile-ngc.transform';
 import { entryPointTransformFactory } from './ng-package/entry-point/entry-point.transform';
 import { initTsConfigTransformFactory } from './ng-package/entry-point/init-tsconfig.transform';
+import { writeBundlesTransform } from './ng-package/entry-point/write-bundles.transform';
 import { writePackageTransform } from './ng-package/entry-point/write-package.transform';
 import { NgPackagrOptions, normalizeOptions } from './ng-package/options';
 import { packageTransformFactory } from './ng-package/package.transform';
+import { StylesheetProcessor } from './styles/stylesheet-processor';
 
 /**
  * The original ng-packagr implemented on top of a rxjs-ified and di-jectable transformation pipeline.
@@ -29,13 +32,15 @@ export class NgPackagr {
   });
   */
 
+  private buildTransformOperator: Transform | undefined;
+
   private context = {
     options: {} as NgPackagrOptions,
     project: undefined as string,
     tsConfig: undefined as ParsedConfiguration | string
   }
 
-  private buildTransformOperator: Transform | undefined;
+  private nativeEsBuild = false;
 
   // TODO: to be removed
   // private buildTransform: InjectionToken<Transform> = PACKAGE_TRANSFORM.provide;
@@ -48,6 +53,25 @@ export class NgPackagr {
   }
 
   /**
+   * Sets the path to the user's "ng-package" file (either `package.json`, `ng-package.json`, or `ng-package.js`)
+   *
+   * @param project File path
+   * @return Self instance for fluent API
+   */
+  public forProject(project: string): NgPackagr {
+    this.context.project = project;
+    // this.providers.push(provideProject(project));
+
+    return this;
+  }
+
+  public withNativeEsBuild(toggle: boolean): NgPackagr {
+    this.nativeEsBuild = toggle;
+
+    return this;
+  }
+
+  /**
    * Adds options to ng-packagr
    *
    * @param options Ng Packagr Options
@@ -57,19 +81,6 @@ export class NgPackagr {
   public withOptions(options: NgPackagrOptions): NgPackagr {
     this.context.options = options;
     // this.providers.push(provideOptions(options));
-
-    return this;
-  }
-
-  /**
-   * Sets the path to the user's "ng-package" file (either `package.json`, `ng-package.json`, or `ng-package.js`)
-   *
-   * @param project File path
-   * @return Self instance for fluent API
-   */
-  public forProject(project: string): NgPackagr {
-    this.context.project = project;
-    // this.providers.push(provideProject(project));
 
     return this;
   }
@@ -161,8 +172,14 @@ export class NgPackagr {
         ),
         analyseSourcesTransform,
         entryPointTransformFactory(
-          null,
-          null,
+          this.nativeEsBuild ? null : compileNgcTransformFactory(StylesheetProcessor, this.context.options),
+          this.nativeEsBuild ? null : writeBundlesTransform(this.context.options),
+          // Option 1: pass null, null 1st and 2nd param for the native esbuild
+          // null, // XX: instantiate the legacy transforms with no DI
+          // null, // XX: instantiate the legacy transforms with no DI
+          // Option 2: instantiate the legacy transforms with no DI
+          // compileNgcTransformFactory(StylesheetProcessor, this.context.options)
+          // writeBundlesTransform(this.context.options)
           writePackageTransform(this.context.options)
         )
       );
