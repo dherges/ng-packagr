@@ -2,7 +2,7 @@ const ngPackage = require('../../../dist/src/public_api');
 const path = require('path');
 
 ngPackage
-  .ngPackagr()
+  .ngPackagrNative()
   .forProject(path.join(__dirname, 'ng-package.json'))
   .withTsConfig(path.join(__dirname, 'tsconfig.ngc.json'))
   .build()

@@ -182,12 +182,16 @@ export class NgPackagr {
   }
 }
 
-export const ngPackagr = (): NgPackagr =>
-  new NgPackagr([
+/** @deprecated `ngPackagr()` is deprecated, use `ngPackagrNative()` instead! */
+export const ngPackagr = (): NgPackagr => {
+  log.warn(`DEPRECATED API: usage of ngPackagr() programmatic API should be replaced with ngPackagrNative()`);
+
+  return new NgPackagr([
     // Add default providers to this list.
     ...PACKAGE_PROVIDERS,
     ...ENTRY_POINT_PROVIDERS,
   ]);
+};
 
 export const ngPackagrNative = (): NgPackagr =>
   new NgPackagr([]);

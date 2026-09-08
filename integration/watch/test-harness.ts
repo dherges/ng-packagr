@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { expect } from 'chai';
 import { Subscription, tap } from 'rxjs';
-import { ngPackagr } from '../../dist';
+import { ngPackagrNative } from '../../dist';
 
 /**
  * A testing harness class to setup the enviroment and test the incremental builds.
@@ -119,7 +119,7 @@ export class TestHarness {
 
   private setUpNgPackagr(): Promise<void> {
     return new Promise(resolve => {
-      this.ngPackagr$$ = ngPackagr()
+      this.ngPackagr$$ = ngPackagrNative()
         .forProject(path.join(this.testTempPath, 'ng-package.json'))
         .withTsConfig(path.join(this.testTempPath, 'tsconfig.ngc.json'))
         .watch()
