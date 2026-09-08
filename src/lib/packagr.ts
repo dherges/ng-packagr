@@ -5,6 +5,7 @@ import { BuildGraph } from './graph/build-graph';
 import { Transform } from './graph/transform';
 import { analyseSourcesTransform } from './ng-package/entry-point/analyse-sources.transform';
 import { compileNgcTransformFactory } from './ng-package/entry-point/compile-ngc.transform';
+import { entryPointEsbuildTransformFactory } from './ng-package/entry-point/entry-point-esbuild.transform';
 import { ENTRY_POINT_PROVIDERS } from './ng-package/entry-point/entry-point.di';
 import { entryPointTransformFactory } from './ng-package/entry-point/entry-point.transform';
 import { DEFAULT_TS_CONFIG_TOKEN, provideTsConfig } from './ng-package/entry-point/init-tsconfig.di';
@@ -31,10 +32,11 @@ export class NgPackagr {
   private buildTransform: InjectionToken<Transform> = PACKAGE_TRANSFORM.provide;
 
   private context = {
+    nativeBuild: true,
     options: {} as NgPackagrOptions,
     project: undefined as string,
     tsConfig: undefined as ParsedConfiguration | string
-  }
+  };
 
   /** @deprecated Kept for backwards compatibility */
   private providers: Provider[] = []
@@ -163,14 +165,15 @@ export class NgPackagr {
       log.debug(`Running ng-packagr with the new transform pipeline!`);
       const normalizedOptions = normalizeOptions(this.context.options);
 
-      // TODO: native es build
-      // const entryPointTransform = entryPointEsbuildTransformFactory(writePackageTransform(normalizedOptions));
-      // Legacy transform: ngc and bundling in separate stages (no esbuild)
-      const entryPointTransform = entryPointTransformFactory(
-        compileNgcTransformFactory(StylesheetProcessor, normalizedOptions),
-        writeBundlesTransform(normalizedOptions),
-        writePackageTransform(normalizedOptions)
-      );
+      let entryPointTransform = this.context.nativeBuild ?
+        // Native esbuild
+        entryPointEsbuildTransformFactory(writePackageTransform(normalizedOptions)) :
+        // Legacy transform: ngc and bundling in separate stages (no esbuild)
+        entryPointTransformFactory(
+          compileNgcTransformFactory(StylesheetProcessor, normalizedOptions),
+          writeBundlesTransform(normalizedOptions),
+          writePackageTransform(normalizedOptions)
+        );
 
       // Use the out-of-the-box transformation
       return observableOf(new BuildGraph()).pipe(

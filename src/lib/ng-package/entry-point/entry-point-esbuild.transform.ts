@@ -34,15 +34,20 @@ export const entryPointEsbuildTransformFactory = (
       log.info('Building with esbuild natively...')
       const entryPoint = findEntryPointInProgress(graph);
       const entryPointFilePath = entryPoint.data.entryPoint.entryFilePath;
+      const flatModuleFile = entryPoint.data.entryPoint.flatModuleFile;
       const outputFile = entryPoint.data.destinationFiles.fesm2022;
+      const declarations = entryPoint.data.destinationFiles.declarations;
       const declarationsDir = entryPoint.data.destinationFiles.declarationsDir;
       const declarationsBundled = entryPoint.data.destinationFiles.declarationsBundled;
       const parsedConfiguration = entryPoint.data.tsConfig;
+
       await buildEntryPoint(
         entryPointFilePath,
-        outputFile,
+        flatModuleFile,
+        declarations,
         declarationsDir,
         declarationsBundled,
+        outputFile,
         parsedConfiguration
       );
 

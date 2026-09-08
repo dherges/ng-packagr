@@ -1,28 +1,26 @@
 import { ParsedConfiguration } from '@angular/compiler-cli';
 import * as esbuild from 'esbuild';
-import * as path from 'path';
 import { angularLibraryEsbuildPlugin } from './angular-library-plugin';
 import { bundleTypeDefinitions } from './bundle-type-definitions';
 import { createRawTypeDefinitions } from './create-type-definitions';
 
 export async function buildEntryPoint(
   entryPointFilePath: string,
-  outputFile: string,
+  flatModuleFile: string,
+  declarations: string,
   declarationsDir: string,
   declarationsBundled: string,
+  outputFile: string,
   parsedConfiguration: ParsedConfiguration
 ) {
   console.log('🚀 Stage 1: Generating APF Type Definitions (.d.ts)...');
-  const flatModuleFile = path.basename(declarationsBundled, '.d.ts');
-  const distRoot = path.dirname(path.dirname(outputFile));
-  const tmpTypesDir = path.join(distRoot, 'tmp-typings', path.basename(declarationsDir));
   await createRawTypeDefinitions({
     parsedConfiguration,
-    tmpTypesDir,
+    tmpTypesDir: declarations,
     flatModuleFile
   });
   await bundleTypeDefinitions({
-    tmpTypesDir,
+    tmpTypesDir: declarations,
     flatModuleFile,
     declarationsDir,
     declarationsBundled

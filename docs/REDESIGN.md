@@ -61,16 +61,16 @@ In short: don't break the functional core of legacy `ng-packagr`.
 Port the existing functionality _as-is_.
 
 ### Non-Functional Requirements (The Innovation Core)
- 
+
 While maintaining 100% feature-parity with the functionality,
 this rewrite optimizes the library build pipeline for large-scale library codebases:
- 
- - ⚡ __Watch Velocity (Developer Experience)__:
-   Reduces the latency of incremental library compilation in local development mode. By maintaining an in-memory graph, code changes bypass the declaration phase entirely, enabling near-instant application hot-reloads in large-scale monorepos.
- - 🧠 __I/O Resiliency (Minimal Resource Footprint)__:
-   Significantly shrinks CI/CD pipeline runtimes by prioritizing volatile in-memory AST transformations over heavy, sequential disk-bound read/write cycles.
- - 🎯 __Tooling Homogeneity (Ecosystem Convergence)__:
-   Standardizes the Angular build ecosystem. By natively utilizing `esbuild` for both applications (`@angular-devkit/build-angular`) and libraries, the Angular team will be enabled to deprecate disparate, parallel build layers (such as Rolldown/Rollup fragments), unifying the codebase and lowering long-term maintenance overhead.
+
+- ⚡ __Watch Velocity (Developer Experience)__:
+  Reduces the latency of incremental library compilation in local development mode. By maintaining an in-memory graph, code changes bypass the declaration phase entirely, enabling near-instant application hot-reloads in large-scale monorepos.
+- 🧠 __I/O Resiliency (Minimal Resource Footprint)__:
+  Significantly shrinks CI/CD pipeline runtimes by prioritizing volatile in-memory AST transformations over heavy, sequential disk-bound read/write cycles.
+- 🎯 __Tooling Homogeneity (Ecosystem Convergence)__:
+  Standardizes the Angular build ecosystem. By natively utilizing `esbuild` for both applications (`@angular-devkit/build-angular`) and libraries, the Angular team will be enabled to deprecate disparate, parallel build layers (such as Rolldown/Rollup fragments), unifying the codebase and lowering long-term maintenance overhead.
 
 
 ## Goals (Expected Value)
