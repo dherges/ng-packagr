@@ -143,13 +143,13 @@ export class NgPackagr {
     if (this.providers.length > 0) {
       log.warn(`DEPRECATION: running ng-packagr with the legacy DI-based transform pipeline!`);
       // Legacy DI-based transforms
-      if (!this.providers.some(p => 'provide' in p && p.provide === DEFAULT_TS_CONFIG_TOKEN)) {
-        this.withTsConfig(undefined);
-      }
-
       this.providers.push(provideOptions(this.context.options));
       this.providers.push(provideProject(this.context.project));
       this.providers.push(provideTsConfig(this.context.tsConfig));
+
+      if (!this.providers.some(p => 'provide' in p && p.provide === DEFAULT_TS_CONFIG_TOKEN)) {
+        this.withTsConfig(undefined);
+      }
 
       const injector = ReflectiveInjector.resolveAndCreate(this.providers);
       const buildTransformOperator = injector.get(this.buildTransform);
