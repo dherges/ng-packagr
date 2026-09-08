@@ -47,7 +47,7 @@ export const angularLibraryEsbuildPlugin = (options: AngularCompilerOptions): es
         writeFile: (fileName, data, writeByteOrderMark, onError, sourceFiles) => {
           if (fileName.endsWith('.d.ts') || fileName.endsWith('.d.ts.map')) {
             // .d.ts Dateien schreiben wir weiterhin für das APF auf Platte
-            console.log("params", writeByteOrderMark, onError);
+            console.log("write .d.ts file: ", fileName, writeByteOrderMark, onError);
 //            baseTsHost.writeFile(fileName, data, writeByteOrderMark, onError, sourceFiles);
 // XX: skip writing the d.ts files here...but maybe we should emit them here and bundle up after esbuild???
           } else if (fileName.endsWith('.js')) {
