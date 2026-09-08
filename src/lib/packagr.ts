@@ -15,8 +15,8 @@ import { NgPackagrOptions, normalizeOptions } from './ng-package/options';
 import { provideOptions } from './ng-package/options.di';
 import { PACKAGE_PROVIDERS, PACKAGE_TRANSFORM } from './ng-package/package.di';
 import { packageTransformFactory } from './ng-package/package.transform';
-import { StylesheetProcessor } from './styles/stylesheet-processor';
 import { provideProject } from './project.di';
+import { StylesheetProcessor } from './styles/stylesheet-processor';
 import * as log from './utils/log';
 
 /**
