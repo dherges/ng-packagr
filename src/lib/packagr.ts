@@ -159,9 +159,18 @@ export class NgPackagr {
         map(() => undefined),
       );
     } else {
-      // TODO: ng-packagr native...no DI... debug ts-extensions test failure
+      // TODO: ng-packagr native...no DI..potentially no RxJS
       log.debug(`Running ng-packagr with the new transform pipeline!`);
       const normalizedOptions = normalizeOptions(this.context.options);
+
+      // TODO: native es build
+      // const entryPointTransform = entryPointEsbuildTransformFactory(writePackageTransform(normalizedOptions));
+      // Legacy transform: ngc and bundling in separate stages (no esbuild)
+      const entryPointTransform = entryPointTransformFactory(
+        compileNgcTransformFactory(StylesheetProcessor, normalizedOptions),
+        writeBundlesTransform(normalizedOptions),
+        writePackageTransform(normalizedOptions)
+      );
 
       // Use the out-of-the-box transformation
       return observableOf(new BuildGraph()).pipe(
@@ -170,11 +179,7 @@ export class NgPackagr {
           normalizedOptions,
           initTsConfigTransformFactory(this.context.tsConfig),
           analyseSourcesTransform,
-          entryPointTransformFactory(
-            compileNgcTransformFactory(StylesheetProcessor, normalizedOptions),
-            writeBundlesTransform(normalizedOptions),
-            writePackageTransform(normalizedOptions)
-          )
+          entryPointTransform
         ),
         map(() => undefined)
       );

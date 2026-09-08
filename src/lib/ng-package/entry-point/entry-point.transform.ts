@@ -1,6 +1,4 @@
-import { Observable, pipe, switchMap, tap } from 'rxjs';
-import { buildEntryPoint } from '../../esbuild/build-entry-point';
-import { BuildGraph } from '../../graph/build-graph';
+import { pipe, tap } from 'rxjs';
 import { STATE_DONE } from '../../graph/node';
 import { Transform } from '../../graph/transform';
 import * as log from '../../utils/log';
@@ -39,52 +37,14 @@ export const entryPointTransformFactory = (
       log.msg(`Building entry point '${entryPoint.data.entryPoint.moduleId}'`);
       log.msg('------------------------------------------------------------------------------');
     }),
-
-    switchMap(async graph => {
-      // running in legacy ng-packagr, skip the native esbuild...
-      if (compileTs || writeBundles) {
-        log.debug('Building with the legacy pipeline.');
-
-        return graph;
-      }
-
-      // ng-packagr new: invoke the native esbuild...
-      log.info('Building with esbuild natively...')
-      const entryPoint = findEntryPointInProgress(graph);
-      const entryPointFilePath = entryPoint.data.entryPoint.entryFilePath;
-      const outputFile = entryPoint.data.destinationFiles.fesm2022;
-      const declarationsDir = entryPoint.data.destinationFiles.declarationsDir;
-      const declarationsBundled = entryPoint.data.destinationFiles.declarationsBundled;
-      const parsedConfiguration = entryPoint.data.tsConfig;
-      await buildEntryPoint(
-        entryPointFilePath,
-        outputFile,
-        declarationsDir,
-        declarationsBundled,
-        parsedConfiguration
-      );
-
-      return graph;
-    }),
-
-    // BEGIN: support legacy ng-packagr for backwards-compatibility
     // TypeScript sources compilation
-    optionalTransform(compileTs),
-    // After TypeScript: bundling and write package
-    optionalTransform(writeBundles),
-    // END: support legacy ng-packagr for backwards-compatibility
-
+    compileTs,
+    // After TypeScript: bundling to ECMAScript Modules (ESM) files
+    writeBundles,
+    // Finally, write package metadata
     writePackage,
     tap(graph => {
       const entryPoint = findEntryPointInProgress(graph);
       entryPoint.state = STATE_DONE;
     }),
   );
-
-function optionalTransform(transform: Transform | undefined): Transform {
-  if (transform) {
-    return transform;
-  } else {
-    return (graph: Observable<BuildGraph>) => graph;
-  }
-}
