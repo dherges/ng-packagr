@@ -5,6 +5,13 @@ ng-packagr in 2026 and beyond
 > &mdash; Charles Munger.
 >
 
+A re-design of `ng-packagr` to improve developer experience,
+reduce build times for large-scale library projects,
+and converge the codebase of the Angular Application Builder and Angular Library Builder.
+
+
+## Context: Why a Re-Design?
+
 `ng-packagr` was created in 2017 out of neccesity and in some way out of desperation.
 It has served its purpose for 9+ years.
 
@@ -21,7 +28,7 @@ Looking at `ng-packagr` through the eyes of today's world, one has to ask:
 is it still doing great?
 
 
-## Requirements
+## Scope (Requirements)
 
 To iterate the legacy architecture of `ng-packagr`,
 this document proposes a port of the current implementation towards a native `esbuild` build engine for libraries.
@@ -65,11 +72,15 @@ this rewrite optimizes the library build pipeline for large-scale library codeba
  - 🎯 __Tooling Homogeneity (Ecosystem Convergence)__:
    Standardizes the Angular build ecosystem. By natively utilizing `esbuild` for both applications (`@angular-devkit/build-angular`) and libraries, the Angular team will be enabled to deprecate disparate, parallel build layers (such as Rolldown/Rollup fragments), unifying the codebase and lowering long-term maintenance overhead.
 
+
+## Goals (Expected Value)
+
 In summary, the `esbuild`-native rewrite aims to be bring value to 3 different groups of people:
 
 1. For Angular library developers: improved developer experience through faster builds.
 2. For organizations running large-scale Angular component libraries: reduced CI/CD costs by optimized pipeline cycle times.
 3. For Angular Core & CLI maintainers: reduced complexity and fewer mental load through one codebase for application and library builds.
+
 
 ## Next Steps
 
