@@ -23,7 +23,8 @@ minimumReleaseAgeExclude:
   - '@angular/*'
   - '@ngtools/webpack'
   - '@schematics/*'
-  - 'ng-packagr'
+  - ng-packagr
+  - '@rolldown/binding-openharmony-arm64@1.2.8'
 
 packageExtensions:
   grpc-gcp:
