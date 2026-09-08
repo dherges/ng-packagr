@@ -26,6 +26,8 @@ export async function buildEntryPoint(
     declarationsBundled
   });
 
+  // TODO: esbuild seems to emit individual .js and .d.ts files...why???
+
   console.log('🚀 Stage 2: Building JavaScript Bundle (esbuild)...');
   await esbuild.build({
     entryPoints: [entryPointFilePath],
